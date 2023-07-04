@@ -1,0 +1,61 @@
+/ MRT-Praktikum: Dimmen einer Lampe
+
+// Inputs:
+unsigned int taster1 = 0; // high wenn Taster gedrückt
+unsigned int taster2 = 1; // high wenn Taster gedrückt
+unsigned int p_ndg = 6; // Polling: wird high bei Spannungsnulldurchgang
+unsigned int i_ndg = 9; // Interrupt: wird high bei Spannungsnulldurchgang, interrupt-fähiger Pin
+unsigned int led1 = 14; // LED leuchtet wenn Pin high
+
+// Outputs:
+unsigned int gatestrom = 3; // prägt Gatestrom in Triac ein, wenn high
+unsigned int led2 = 15; // LED leuchtet wenn Pin high
+
+// Variablen:
+unsigned long cpu_time = 0;
+unsigned int alpha = 90; // Zündwinkel in Grad
+bool last_state_ndg = true; // Letzter Stand des Nulldurchganges
+bool puls_eingepraegt = false;
+unsigned int alpha_min = 10; // minimaler Zündwinkel, EINSTELLEN!!
+unsigned int alpha_max = 170; // maximaler Zündwinkel, EINSTELLEN!!
+
+void setup() {
+  pinMode(gatestrom, OUTPUT);
+  pinMode(p_ndg, INPUT);
+  pinMode(taster1, INPUT);
+  pinMode(taster2, INPUT);
+}
+
+void dimmen() {
+  if(!digitalRead(p_ndg)) {
+    last_state_ndg = false;
+  }
+  
+  if(digitalRead(p_ndg) && !last_state_ndg) {
+    cpu_time = micros();
+    last_state_ndg = true;
+    puls_eingepraegt = false;
+  }
+ 
+  if(micros()>=cpu_time+(20000*alpha)/360 && !puls_eingepraegt) { // Zeit für Phasenanschnitt ist abgewartet und noch kein Puls eingeprägt
+    digitalWrite(gatestrom, HIGH);
+    cpu_time = micros();
+    while(micros()<=cpu_time+10); // ähnlich delay
+    digitalWrite(gatestrom, LOW);
+    puls_eingepraegt = true;
+  }
+}
+
+void taster() {
+  if(digitalRead(taster1) && !digitalRead(taster2) && alpha<alpha_max) {
+    alpha = alpha + 0,000001; //1 micro Grad pro Durchlauf --> ca 32 Grad/sek Haltedauer
+  }
+  else if(!digitalRead(taster1) && digitalRead(taster2) && alpha>alpha_min) {
+    alpha = alpha - 0,000001; //1 micro Grad pro Durchlauf --> ca 32 Grad/sek Haltedauer
+  }
+}
+
+void loop() {
+  dimmen();
+  taster();
+}
