@@ -1,0 +1,46 @@
+// MRT-Praktikum: Dimmen einer Lampe
+
+// Inputs:
+unsigned int taster1 = 0; // high wenn Taster gedrückt
+unsigned int taster2 = 1; // high wenn Taster gedrückt
+unsigned int p_ndg = 6; // Polling: wird high bei Spannungsnulldurchgang
+unsigned int i_ndg = 9; // Interrupt: wird high bei Spannungsnulldurchgang, interrupt-fähiger Pin
+unsigned int led1 = 14; // LED leuchtet wenn Pin high
+
+// Outputs:
+unsigned int gatestrom = 3; // prägt Gatestrom in Triac ein, wenn high
+unsigned int led2 = 15; // LED leuchtet wenn Pin high
+
+// Variablen:
+unsigned int z = 0; // Zähler für Nulldurchgänge
+bool last_state_nd = 0; // Letzter Zustand des Einganges von Nulldurchgang
+bool last_state_light = 0; // letzter Zustand der Lampe
+
+void setup() {
+  pinMode(gatestrom, OUTPUT);
+  pinMode(p_ndg, INPUT);
+}
+
+void blink() {
+  if(!digitalRead(p_ndg)) {
+    last_state_nd = false;
+  }
+  else if(last_state_nd == false && digitalRead(p_ndg)) {
+    z++;
+  };
+
+  // Blink-Dauer: 1 Sekunde
+  if(z>=100) { // 100 * 10ms = 1000ms
+    if(last_state_light) {
+      digitalWrite(gatestrom, LOW);
+    }
+    else if (!last_state_light) {
+      digitalWrite(gatestrom, HIGH);
+    }
+    z = 0;
+  }
+}
+
+void loop() {
+  blink();
+}
