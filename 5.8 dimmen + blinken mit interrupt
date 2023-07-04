@@ -1,0 +1,77 @@
+// Inputs:
+unsigned int taster1 = 0; // high wenn Taster gedrückt
+unsigned int taster2 = 1; // high wenn Taster gedrückt
+unsigned int p_ndg = 6; // Polling: wird high bei Spannungsnulldurchgang
+unsigned int i_ndg = 9; // Interrupt: wird high bei Spannungsnulldurchgang, interrupt-fähiger Pin
+unsigned int led1 = 14; // LED leuchtet wenn Pin high
+
+// Outputs:
+unsigned int gatestrom = 3; // prägt Gatestrom in Triac ein, wenn high
+unsigned int led2 = 15; // LED leuchtet wenn Pin high
+
+// Variablen:
+volatile unsigned int z = 0; // Zähler für Nulldurchgänge
+volatile unsigned long cpu_time = 0;
+unsigned int alpha = 90; // Zündwinkel in Grad
+bool puls_state = false;
+unsigned int alpha_min = 10; // minimaler Zündwinkel, EINSTELLEN!!
+unsigned int alpha_max = 170; // maximaler Zündwinkel, EINSTELLEN!!
+
+void setup() {
+  pinMode(gatestrom, OUTPUT);
+  pinMode(taster1, INPUT);
+  pinMode(taster2, INPUT);
+  pinMode(gatestrom, OUTPUT);
+  pinMode(i_ndg, INPUT);
+  // Interrupt einstellen:
+  attachInterrupt(digitalPinToInterrupt(i_ndg), ISR_nulldurchgang, RISING);
+}
+
+void ISR_nulldurchgang() {
+  z++;
+  cpu_time = micros(); 
+  // https://www.digikey.com/en/maker/blogs/2022/the-dos-and-donts-of-using-arduino-interrupts#:~:text=Do%20not%20use%20delay%20%28%29%2C%20millis%20%28%29%2C%20or,the%20function%20will%20not%20change%20inside%20an%20ISR.
+}
+
+void dimmen() {
+  if(micros()>=cpu_time + (20000*alpha)/360) {
+    digitalWrite(gatestrom, HIGH);
+    cpu_time = micros();
+    puls_state=true;
+  }
+
+  if(puls_state && micros()>= cpu_time + 10) {
+    digitalWrite(gatestrom, LOW);
+    puls_state=false;
+  }
+}
+
+void taster() {
+  if(digitalRead(taster1) && !digitalRead(taster2) && alpha<alpha_max) {
+    alpha = alpha + 0,000001; //1 micro Grad pro Durchlauf --> ca 32 Grad/sek Haltedauer
+  }
+  else if(!digitalRead(taster1) && digitalRead(taster2) && alpha>alpha_min) {
+    alpha = alpha - 0,000001; //1 micro Grad pro Durchlauf --> ca 32 Grad/sek Haltedauer
+  }
+}
+
+bool blink() {
+  // Blink-Dauer: 1 Sekunde = 100 * 10ms = 1000ms
+  if(z<=100) { 
+    return false;
+  }
+  else if(z>100) {
+    return true;
+    if(z>200) {
+      z=0;
+    }
+  }
+}
+
+void loop() {
+  if(blink()) {
+    dimmen();
+  }
+
+  taster();
+}
