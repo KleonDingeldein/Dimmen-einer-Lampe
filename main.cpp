@@ -10,14 +10,14 @@ unsigned int i_ndg = 9; // Interrupt: wird high bei Spannungsnulldurchgang, inte
 unsigned int gatestrom = 3; // prägt Gatestrom in Triac ein, wenn high
 
 // Variablen:
-unsigned long cpu_time = 0; // CPU-Zeit seit Programmbeginn
+volatile unsigned long cpu_time = 0; // CPU-Zeit seit Programmbeginn
 volatile unsigned int z = 0; // Zähler für Nulldurchgänge
 float alpha = 90; // Initialzündwinkel
 float alpha_min = 10; // Minimaler Zündwinkel
 float alpha_max = 160; // Maximaler Zündwinkel
 float delta_alpha = 0.001 // einzustellende Variable zur Geschwindigkeit der 
                           // Änderung des Zündwinkels bei Tasterbetätigung
-bool puls_state = false // Zustandspeicher ob Puls abgegeben wurde
+volatile bool puls_state = false // Zustandspeicher ob Puls abgegeben wurde
 
 void ISR_nulldurchgang() {
   // Zähler für Blink-Signal:
