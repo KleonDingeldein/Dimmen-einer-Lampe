@@ -10,28 +10,30 @@ unsigned int i_ndg = 9; // Interrupt: wird high bei Spannungsnulldurchgang, inte
 unsigned int gatestrom = 3; // prägt Gatestrom in Triac ein, wenn high
 
 // Variablen:
-volatile unsigned long cpu_time = 0; // CPU-Zeit seit Programmbeginn
-volatile unsigned int z = 0; // Zähler für Nulldurchgänge
 float alpha = 90; // Initialzündwinkel
 float alpha_min = 10; // Minimaler Zündwinkel
 float alpha_max = 160; // Maximaler Zündwinkel
-float delta_alpha = 0.001 // einzustellende Variable zur Geschwindigkeit der 
-                          // Änderung des Zündwinkels bei Tasterbetätigung
+float delta_alpha = 0.001 // einzustellender Parameter welcher Geschwindigkeit der 
+                          // Änderung des Zündwinkels bei Tasterbetätigung bestimmt
+
 volatile bool puls_state = false // Zustandspeicher ob Puls abgegeben wurde
+volatile unsigned long cpu_time = 0; // CPU-Zeit seit Programmbeginn
+volatile unsigned int z = 0; // Zähler für Nulldurchgänge
+// (Variablen welche in der ISR verwendet werden sollen als 'volatile' deklariert werden'
 
 void ISR_nulldurchgang() {
-  // Zähler für Blink-Signal:
+  // für Blink-feature: Zähler der Nulldurchgänge
   z++; 
   
+  // für Dimm-feature: 
   // Speicher setzen: seit diesem Nulldurchgang wurde noch kein Puls abgegeben:
   puls_state = false; 
   
-  // Zeitpunkt des Nulldurchganges wird abgespeichert:
+  // für Dimm-feature: Zeitpunkt des Nulldurchganges wird abgespeichert:
   cpu_time = micros();
 }
 
 void dimmen() {
-  
   // Bedingung zum Zünden: 
   // - Zündzeitverzögerung ist abgewartet 
   // - es wurde noch kein Puls seit dem letzten NDG abgegeben
@@ -72,8 +74,7 @@ bool blink() {
 }
 
 bool taster() {
-
-  // Bedingung zum Erhöhen/Verringern des Zündwinkels:
+  // Bedingung zum Verringern/Erhöhen des Zündwinkels:
   // - Digitale Verriegelung der Taster
   // - minimaler/maximaler Zündwinkel wurde nicht unter-/überschritten
 
@@ -96,7 +97,11 @@ void setup() {
   pinMode(taster2, INPUT);
   
   // Interrupt einstellen:
+  // - digitalPinToInterrupt(i_ndg) legt Pin fest
+  // - ISR-nulldurchgang gibt aufzurufende Funktionen an
+  // - RISING: Interrupt triggert auf steigende Flanke
   attachInterrupt(digitalPinToInterrupt(i_ndg), ISR_nulldurchgang, RISING);
+  
 }
 
 void loop() {
