@@ -74,7 +74,7 @@ bool blink() {
   }
 }
 
-void taster() {
+bool taster() {
 
   // Bedingung zum Erhöhen/Verringern des Zündwinkels:
   // - Digitale Verriegelung der Taster
