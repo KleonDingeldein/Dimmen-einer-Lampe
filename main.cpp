@@ -24,6 +24,7 @@ bool puls_eingepraegt = false;
 
 void ISR_nulldurchgang() {
   z++;
+  cpu_time = micros();
 }
 void dimmen() {
   if(!digitalRead(p_ndg)) {
@@ -39,7 +40,7 @@ void dimmen() {
   if(micros()>=cpu_time+(20000*alpha)/360 && !puls_eingepraegt) { // Zeit für Phasenanschnitt ist abgewartet und noch kein Puls eingeprägt
     digitalWrite(gatestrom, HIGH);
     cpu_time = micros();
-    while(micros()<=cpu_time+10); // ähnlich delay
+    delayMicroseconds(10); // ähnlich delay
     digitalWrite(gatestrom, LOW);
     puls_eingepraegt = true;
   }
