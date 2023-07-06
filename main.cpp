@@ -16,7 +16,7 @@ unsigned int led2 = 15; // LED leuchtet wenn Pin high
 unsigned long cpu_time = 0;
 volatile unsigned int z = 0; // Zähler für Nulldurchgänge
 float alpha = 36; // Zündwinkel in Grad
-float alpha_min = 10;
+float alpha_min = 10; //
 float alpha_max = 160;
 bool last_state_ndg = true; // Letzter Stand des Nulldurchganges
 bool puls_eingepraegt = false;
@@ -26,23 +26,17 @@ void ISR_nulldurchgang() {
   z++;
   cpu_time = micros();
 }
+
 void dimmen() {
-  if(!digitalRead(p_ndg)) {
-    last_state_ndg = false;
-  }
-  
-  if(digitalRead(p_ndg) && !last_state_ndg) {
-    cpu_time = micros();
-    last_state_ndg = true;
-    puls_eingepraegt = false;
-  }
- 
-  if(micros()>=cpu_time+(20000*alpha)/360 && !puls_eingepraegt) { // Zeit für Phasenanschnitt ist abgewartet und noch kein Puls eingeprägt
+  if(micros()>=cpu_time + (20000*alpha)/360 && !puls_state) {
     digitalWrite(gatestrom, HIGH);
     cpu_time = micros();
-    delayMicroseconds(10); // ähnlich delay
+    puls_state=true;
+  }
+
+  if(puls_state && micros()>= cpu_time + 10) {
     digitalWrite(gatestrom, LOW);
-    puls_eingepraegt = true;
+    puls_state=false;
   }
 }
 
