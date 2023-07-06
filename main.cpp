@@ -18,13 +18,15 @@ volatile unsigned int z = 0; // Zähler für Nulldurchgänge
 float alpha = 90; // Initialzündwinkel
 float alpha_min = 10; // Minimaler Zündwinkel
 float alpha_max = 160; // Maximaler Zündwinkel
+float delta_alpha = 0.001 // einzustellende Variable zur Geschwindigkeit der 
+                          // Änderung des Zündwinkels bei Tasterbetätigung
 bool puls_state = false // Zustandspeicher ob Puls abgegeben wurde
 
 void ISR_nulldurchgang() {
   // Zähler für Blink-Signal:
   z++; 
   
-  // Speicher setzen: seit dem letzten Nulldurchgang wurde noch kein Puls abgegeben:
+  // Speicher setzen: seit diesem Nulldurchgang wurde noch kein Puls abgegeben:
   puls_state = false; 
   
   // Zeitpunkt des Nulldurchganges wird abgespeichert:
@@ -33,8 +35,9 @@ void ISR_nulldurchgang() {
 
 void dimmen() {
   
-  // Bedingung zum Zünden: Zündzeitverzögerung ist abgewartet 
-  // und es wurde noch kein Puls seit dem letzten NDG abgegeben
+  // Bedingung zum Zünden: 
+  // - Zündzeitverzögerung ist abgewartet 
+  // - es wurde noch kein Puls seit dem letzten NDG abgegeben
   if(micros()>=cpu_time + (20000*alpha)/360 && !puls_state) {
     
     // Zündstrom wird in TRIAC eingeprägt:
@@ -54,9 +57,9 @@ void dimmen() {
 
 bool blink() {
   // Blink-Dauer: 1 Sekunde = 100 * 10 ms
+  // Zähler z der NDG wird in ISR bearbeitet
+  
   if(z<=100) { 
-
-    // Rückgabewert true
     return(1);
   }
     
@@ -66,19 +69,26 @@ bool blink() {
     if(z>200) {
       z=0;
     }
-
-    // Rückgabewert false:
+    
     return(0);
   }
 }
 
 void taster() {
 
+  // Bedingung zum Erhöhen/Verringern des Zündwinkels:
+  // - Digitale Verriegelung der Taster
+  // - minimaler/maximaler Zündwinkel wurde nicht unter-/überschritten
+
   if(digitalRead(taster1) && !digitalRead(taster2) && alpha<=alpha_max) {
-    alpha += 0.001;
+
+    // Erhöhung des Zündwinkels um delta_alpha pro Schleifendurchgang
+    alpha += delta_alpha;
   }
   else if(!digitalRead(taster1) && digitalRead(taster2) && alpha >=alpha_min) {
-    alpha -= 0.001;
+
+    // Verringerung des Zündwinkels um delta_alpha pro Schleifendurchgang
+    alpha -= delta_alpha;
   }
 }
 
@@ -95,5 +105,7 @@ void loop() {
   if(blink()){
     dimmen();
   }
+
+  // Abfragen der Taster zur Veränderung des Zündwinkels
   taster();
 }
