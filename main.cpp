@@ -4,13 +4,10 @@
 // Inputs:
 unsigned int taster1 = 0; // high wenn Taster gedrückt
 unsigned int taster2 = 1; // high wenn Taster gedrückt
-unsigned int p_ndg = 6; // Polling: wird high bei Spannungsnulldurchgang
 unsigned int i_ndg = 9; // Interrupt: wird high bei Spannungsnulldurchgang, interrupt-fähiger Pin
-unsigned int led1 = 14; // LED leuchtet wenn Pin high
 
 // Outputs:
 unsigned int gatestrom = 3; // prägt Gatestrom in Triac ein, wenn high
-unsigned int led2 = 15; // LED leuchtet wenn Pin high
 
 // Variablen:
 unsigned long cpu_time = 0; // CPU-Zeit seit Programmbeginn
