@@ -95,6 +95,8 @@ bool taster() {
 void setup() {
   pinMode(gatestrom, OUTPUT);
   pinMode(p_ndg, INPUT);
+  pinMode(taster1, INPUT);
+  pinMode(taster2, INPUT);
   
   // Interrupt einstellen:
   attachInterrupt(digitalPinToInterrupt(i_ndg), ISR_nulldurchgang, RISING);
