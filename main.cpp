@@ -33,6 +33,7 @@ void ISR_nulldurchgang() {
   cpu_time = micros();
 }
 
+// Dimm-Feature: Die Helligkeit der Lampe variiert mit dem Zündwinkel
 void dimmen() {
   // Bedingung zum Zünden: 
   // - Zündzeitverzögerung ist abgewartet 
@@ -54,6 +55,7 @@ void dimmen() {
   }
 }
 
+// Blink-feature: liefert Blinksignal als bool'sche Variable
 bool blink() {
   // Blink-Dauer: 1 Sekunde = 100 * 10 ms
   // Zähler z der NDG wird in ISR bearbeitet
@@ -73,6 +75,8 @@ bool blink() {
   }
 }
 
+// Feature: Helligkeit der Lampe kann mit Taster 1 und Taster 2 verändert werden
+// (durch Veränderung des Zündwinkels)
 bool taster() {
   // Bedingung zum Verringern/Erhöhen des Zündwinkels:
   // - Digitale Verriegelung der Taster
@@ -98,14 +102,14 @@ void setup() {
   
   // Interrupt einstellen:
   // - digitalPinToInterrupt(i_ndg) legt Pin fest
-  // - ISR-nulldurchgang gibt aufzurufende Funktionen an
+  // - 'ISR_nulldurchgang' wird aufgerufen wenn Interrupt eintritt
   // - RISING: Interrupt triggert auf steigende Flanke
   attachInterrupt(digitalPinToInterrupt(i_ndg), ISR_nulldurchgang, RISING);
   
 }
 
 void loop() {
-  // TRIAC wird nur gezündet wenn Blink-Signal =true
+  // Blinken: TRIAC wird nur gezündet wenn Blink-Signal =true
   if(blink()){
     dimmen();
   }
